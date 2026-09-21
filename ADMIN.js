@@ -47,7 +47,6 @@ const PACKAGE_DATA = {
 //  INTERACTIVE FINANCE CARDS
 // ══════════════════════════════════════════════════════════════
 function selectFinCard(cardType) {
-    const allCards = document.querySelectorAll('.fin-stat-card');
     const clickedCard = document.querySelector(`.fin-stat-card[data-fin-card="${cardType}"]`);
 
     // Toggle logic: If you click the same card again, clear the filter

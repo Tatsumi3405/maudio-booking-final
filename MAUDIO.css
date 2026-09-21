@@ -5354,3 +5354,9 @@ body { font-size: 16px; }
   border-color: rgba(232,24,12,.35);
   color: #fca5a5;
 }
+@media (max-width: 1100px) and (min-width: 601px) {
+  .side-tab { width: 48px; }
+  .side-tab-expanded { display: none; }
+  .side-tab:hover { width: 148px; }
+  .side-tab:hover .side-tab-expanded { display: flex; }
+}

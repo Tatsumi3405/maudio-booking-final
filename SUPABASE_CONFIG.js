@@ -8,8 +8,8 @@
    BOOKING.js and MAUDIO.js.
    ══════════════════════════════════════════════════════════════ */
 
-const SUPABASE_URL      = 'window._env_.https://ponrkrqsmktdgclpuvyd.supabase.co';
-const SUPABASE_ANON_KEY = 'window._env_.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvbnJrcnFzbWt0ZGdjbHB1dnlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODI2MjgsImV4cCI6MjA4OTc1ODYyOH0.uSKHTHx84yIac1QJAcpwOtZMq1FImaDjAhyppakvWvQ';
+const SUPABASE_URL      = window._env_.SUPABASE_URL;
+const SUPABASE_ANON_KEY = window._env_.SUPABASE_ANON_KEY;
 
 // ── Init real Supabase client ────────────────────────────────
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -235,7 +235,7 @@ const auth = {
     return data?.user;
   },
 
-  onAuthStateChanged: callback => {
+    onAuthStateChanged: callback => {
     let _initFired = false;
 
     // Listener for all subsequent changes (LOGIN, LOGOUT, TOKEN_REFRESH…)
@@ -247,12 +247,26 @@ const auth = {
       callback(session?.user ?? null);
     });
 
-    // Immediate check in case onAuthStateChange hasn't fired yet
-    _sb.auth.getSession().then(({ data }) => {
-      if (_initFired) return;     // onAuthStateChange already fired first
-      _initFired = true;
-      callback(data?.session?.user ?? null);
-    });
+    // Immediate check in case onAuthStateChange hasn't fired yet.
+    // The .catch() is important: if Supabase is unreachable (offline,
+    // CSP block, DNS failure) getSession() rejects instead of resolving
+    // with null — without this, callback() would never fire and the
+    // session veil would sit there until the 3s fallback kicked in.
+    // Treating the rejection as "no session" makes the login form
+    // appear immediately, which is the correct behaviour when we
+    // genuinely can't tell whether a session exists.
+    _sb.auth.getSession()
+      .then(({ data }) => {
+        if (_initFired) return;   // onAuthStateChange already fired first
+        _initFired = true;
+        callback(data?.session?.user ?? null);
+      })
+      .catch(err => {
+        console.warn('[Auth] getSession failed — treating as signed out:', err);
+        if (_initFired) return;
+        _initFired = true;
+        callback(null);
+      });
 
     return () => subscription.unsubscribe();
   }

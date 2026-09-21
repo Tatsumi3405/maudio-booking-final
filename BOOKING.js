@@ -332,7 +332,7 @@ const SOUND_ADDONS_DISABLED = [
 // Server-side price verification goes through this Worker, which holds
 // the Supabase service key server-side only. Must match the URL in
 // BOOKING.html's CSP connect-src.
-const WORKER_URL = 'window._env_.https://maudio-booking-webhook.rommelbaro4.workers.dev';
+const WORKER_URL = window._env_.WORKER_URL;
 
 // ── FIELD LENGTH LIMITS ────────────────────
 // SECURITY FIX: the form fields previously had no length cap at all, so a
